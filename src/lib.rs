@@ -127,17 +127,17 @@ impl VertexBufferLayout {
             gl::FLOAT => {
                 normalised = gl::FALSE;
                 let stride: u32 = mem::size_of::<GLfloat>().try_into().unwrap();
-                self.stride += stride;
+                self.stride += count * stride;
             },
             gl::BYTE => {
                 normalised = gl::TRUE;
                 let stride: u32 = mem::size_of::<GLbyte>().try_into().unwrap();
-                self.stride += stride;
+                self.stride += count * stride;
             },
             gl::INT => {
                 normalised = gl::FALSE;
                 let stride: u32 = mem::size_of::<GLuint>().try_into().unwrap();
-                self.stride += stride;
+                self.stride += count * stride;
             },
             _ => {
                 println!("Undefined type: {}", e_type);

@@ -35,7 +35,7 @@ void main() {
 fn main() {
     let el = EventLoop::new();
     let wb = WindowBuilder::new()
-        .with_title("Triangle")
+        .with_title("Playground")
         .with_inner_size(glutin::dpi::LogicalSize::new(1024.0, 768.0));
     
     let gl_window = ContextBuilder::new()
@@ -145,32 +145,17 @@ fn main() {
     ];
 
 
-    // let va = VertexArray::new();
-    unsafe {
-        let mut vao = 0;
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-    }
+    let mut va = VertexArray::new();
 
-    let vb = VertexBuffer::new(
+    let mut vb = VertexBuffer::new(
         &VERTICES, 
         mem::size_of_val(&VERTICES)
     );
 
-    //va.add_buffer(vb);
+    let mut layout = VertexBufferLayout::new();
+    layout.push(3, gl::FLOAT);
+    va.add_buffer(&mut vb, &mut layout);
     
-    unsafe {
-        gl::EnableVertexAttribArray(0);
-        gl::VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            mem::size_of::<Vertex>().try_into().unwrap(),
-            0 as *const _,
-        );
-    }
-
     let mut ib = IndexBuffer::new(
         &INDICES,
         mem::size_of_val(&INDICES)
@@ -199,7 +184,7 @@ fn main() {
                     
                     //gl::DrawArrays(gl::TRIANGLES, 0, 3);
 
-                    //va.bind()
+                    va.bind();
                     ib.bind();
 
                     // DrawElements replaces draw arrays when using and EBO
