@@ -109,9 +109,9 @@ impl Shader {
 }
 
 pub struct ShaderProgram<'a> {
-    renderer_id: u32,
-    vertex_shader: &'a Shader,
-    fragment_shader: &'a Shader,
+    pub renderer_id: u32,
+    pub vertex_shader: &'a Shader,
+    pub fragment_shader: &'a Shader,
 }
 
 impl<'a> ShaderProgram<'a> {
