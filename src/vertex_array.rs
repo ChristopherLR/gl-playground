@@ -1,6 +1,6 @@
 use gl;
 
-use crate::vertex_buffer::{ VertexBufferLayout, VertexBuffer };
+use crate::buffer::{ VertexBufferLayout, Buffer };
 
 pub struct VertexArray {
     renderer_id: u32
@@ -23,7 +23,7 @@ impl VertexArray {
        unsafe { gl::BindVertexArray(0) } 
     }
 
-    pub fn add_buffer(&mut self, vb: &mut VertexBuffer, layout: &mut VertexBufferLayout){
+    pub fn add_buffer(&mut self, vb: &mut Buffer, layout: &mut VertexBufferLayout){
         self.bind();
         vb.bind();
         let stride = layout.get_stride();

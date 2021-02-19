@@ -99,13 +99,66 @@ impl Shader {
         }
     }
 
+    pub fn delete_shader(&self){
+        unsafe { gl::DeleteShader(self.renderer_id) };
+    }
+
     fn get_uniform_location(name: &str){
 
     }
 }
 
-pub struct ShaderProgram {
+pub struct ShaderProgram<'a> {
     renderer_id: u32,
-    vertex_shader: Shader,
-    fragment_shader: Shader,
+    vertex_shader: &'a Shader,
+    fragment_shader: &'a Shader,
 }
+
+impl<'a> ShaderProgram<'a> {
+    pub fn new(vertex_shader: &'a Shader, fragment_shader: &'a Shader) -> Self {
+        let id;
+        unsafe {
+            id = gl::CreateProgram();
+            gl::AttachShader(id, vertex_shader.renderer_id);
+            gl::AttachShader(id, fragment_shader.renderer_id);
+            gl::LinkProgram(id);
+        }
+
+        ShaderProgram::get_error_log(id);
+
+        ShaderProgram {
+            renderer_id: id,
+            vertex_shader,
+            fragment_shader
+        }
+    }
+
+    #[inline]
+    pub fn get_error_log(id: u32) {
+        let mut success = 0;
+        unsafe {
+            gl::GetProgramiv(id, gl::LINK_STATUS, &mut success);
+            if success == 0 {
+                let mut err_log: Vec<u8> = Vec::with_capacity(1024);
+                let mut log_len = 0_i32;
+                gl::GetProgramInfoLog(
+                    id,
+                    1024 as i32,
+                    &mut log_len,
+                    err_log.as_mut_ptr().cast(),
+                );
+                err_log.set_len(log_len.try_into().unwrap());
+                panic!("program link error: {}", String::from_utf8_lossy(&err_log));
+            }
+        }
+    }
+
+    pub fn use_program(&self) {
+        unsafe {
+            gl::UseProgram(self.renderer_id);
+        }
+    }
+}
+
+
+

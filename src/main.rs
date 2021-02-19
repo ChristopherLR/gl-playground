@@ -7,16 +7,16 @@ use glutin::{
 
 use gl;
 use std::mem;
-use core::convert::TryInto;
 use gl_playground::{ 
-    shader::Shader,
-    vertex_buffer::{
-        VertexBuffer,
+    shader::{
+        Shader,
+        ShaderProgram
+    },
+    buffer::{
+        Buffer,
         VertexBufferLayout,
     },
     vertex_array::VertexArray,
-    index_buffer::IndexBuffer,
-    Vertex 
 };
 
 const VERT_SHADER: &str = r#"
@@ -53,36 +53,13 @@ fn main() {
 
     let fragment_shader = Shader::from_str(FRAG_SHADER, gl::FRAGMENT_SHADER);
 
-    let shader_program;
-    // Shader initialisation
-    unsafe {
-        shader_program = gl::CreateProgram();
-        gl::AttachShader(shader_program, vertex_shader.renderer_id);
-        gl::AttachShader(shader_program, fragment_shader.renderer_id);
-        gl::LinkProgram(shader_program);
+    let shader_program = ShaderProgram::new(&vertex_shader, &fragment_shader);
 
-        let mut success = 0;
-        gl::GetProgramiv(shader_program, gl::LINK_STATUS, &mut success);
-        if success == 0 {
-            const CAP: usize = 1024;
-            let mut err_log: Vec<u8> = Vec::with_capacity(CAP);
-            let mut log_len = 0_i32;
-            gl::GetProgramInfoLog(
-                shader_program,
-                CAP as i32,
-                &mut log_len,
-                err_log.as_mut_ptr().cast(),
-            );
-            err_log.set_len(log_len.try_into().unwrap());
-            panic!("program link error: {}", String::from_utf8_lossy(&err_log));
-        }
-    }
-
-    const VERTICES: [Vertex; 4] = [
-        [0.5, 0.5, 0.0],   //TR
-        [-0.5, 0.5, 0.0],  //TL
-        [-0.5, -0.5, 0.0], //BL 
-        [0.5, -0.5, 0.0],  //BR
+    const VERTICES: [f32; 12] = [
+         0.5,  0.5, 0.0, //TR
+        -0.5,  0.5, 0.0, //TL
+        -0.5, -0.5, 0.0, //BL 
+         0.5, -0.5, 0.0, //BR
     ]; 
     
     const INDICES: [u32; 6] = [
@@ -93,7 +70,7 @@ fn main() {
 
     let mut va = VertexArray::new();
 
-    let mut vb = VertexBuffer::new(
+    let mut vb = Buffer::new(
         &VERTICES, 
         mem::size_of_val(&VERTICES)
     );
@@ -102,17 +79,14 @@ fn main() {
     layout.push(3, gl::FLOAT);
     va.add_buffer(&mut vb, &mut layout);
     
-    let mut ib = IndexBuffer::new(
+    let mut ib = Buffer::new(
         &INDICES,
         mem::size_of_val(&INDICES)
     );
-
-        
-    unsafe {
-        gl::DeleteShader(vertex_shader.renderer_id);
-        gl::DeleteShader(fragment_shader.renderer_id);
-        gl::UseProgram(shader_program);
-    }
+    
+    shader_program.use_program();
+    vertex_shader.delete_shader();
+    fragment_shader.delete_shader();
 
     el.run( move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -141,5 +115,4 @@ fn main() {
             _ => (),
         }
     });
-
 }
